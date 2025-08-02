@@ -1,0 +1,6 @@
+#Assignment 1
+
+CREATE DATABASE salesDB;
+USE salesDB;
+CREATE DATABASE demo;
+DROP DATABASE demo;
