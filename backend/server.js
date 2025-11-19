@@ -1,9 +1,10 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import waterReportRoutes from "./routes/waterReportRoutes.js";
-import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
+import waterReportRoutes from "./routes/waterReportRoutes.js";
 
 dotenv.config();
 
@@ -13,23 +14,40 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(helmet());        // security headers
+app.use(morgan("dev"));   // request logging
 
-// Routes
-// Corrected path to match your endpoints
+// Root route (friendly message)
+app.get("/", (req, res) => {
+  res.send("MajiTrack API is running...");
+});
+
+// Health check (important for Render)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "OK" });
+});
+
+// API routes
 app.use("/api/readings", waterReportRoutes);
 
-// Error Handling Middleware
-app.use(notFound);
-app.use(errorHandler);
-
-
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Server Error:", err.message);
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Internal Server Error",
+  });
+});
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 10000,  // avoid hanging during connection
+    maxPoolSize: 10,                  // connection pooling
+  })
+  .then(() => console.log("MongoDB connected successfully 🎉"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Start server
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT} 🚀`)
+);

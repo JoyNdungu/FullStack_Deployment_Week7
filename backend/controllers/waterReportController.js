@@ -1,6 +1,7 @@
+// controllers/waterReportController.js
 import WaterReport from "../models/waterReport.js";
 
-// Get all readings
+// GET all readings
 export const getReadings = async (req, res) => {
   try {
     const readings = await WaterReport.find();
@@ -10,11 +11,11 @@ export const getReadings = async (req, res) => {
   }
 };
 
-// Add a new reading
+// ADD a new reading
 export const addReading = async (req, res) => {
   const { date, units, cost } = req.body;
-  const reading = new WaterReport({ date, units, cost });
   try {
+    const reading = new WaterReport({ date, units, cost });
     const newReading = await reading.save();
     res.status(201).json(newReading);
   } catch (err) {
@@ -22,14 +23,13 @@ export const addReading = async (req, res) => {
   }
 };
 
-// Delete a reading
+// DELETE a reading
 export const deleteReading = async (req, res) => {
+  const { id } = req.params;
   try {
-    const deleted = await WaterReport.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ message: "Reading not found" });
-    }
-    res.json({ message: "Reading deleted" });
+    const deleted = await WaterReport.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: "Reading not found" });
+    res.json({ message: "Reading deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

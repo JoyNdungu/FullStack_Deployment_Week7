@@ -1,3 +1,4 @@
+// routes/waterReportRoutes.js
 import express from "express";
 import { getReadings, addReading, deleteReading } from "../controllers/waterReportController.js";
 
