@@ -68,6 +68,7 @@ Backend API: https://majitrack-backend.onrender.com/api/readings
 - Runs on every push to `main`
 - Installs dependencies, builds the frontend, deploys backend/frontend
 - (Pipeline will be improved after submission)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/27e06b02-b157-4a11-9eba-8ffc449b87d7" />
 
 e) Monitoring & Notes
 ## Monitoring & Maintenance
