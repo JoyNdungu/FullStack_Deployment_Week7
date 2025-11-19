@@ -1,5 +1,5 @@
 # Project Overview
-# MajiTrack
+## MajiTrack
 MajiTrack is a MERN stack application for tracking water consumption readings.
 
 b) Features
