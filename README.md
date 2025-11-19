@@ -1,2 +1,75 @@
-MajiTrack helps households monitor and manage daily water usage. It tracks meter readings, calculates total costs, and visualizes consumption trends
-empowering users to save water, reduce bills, and promote sustainable living.
+# Project Overview
+# MajiTrack
+MajiTrack is a MERN stack application for tracking water consumption readings.
+
+b) Features
+
+Add readings
+
+Delete readings
+
+View reports
+
+Responsive frontend
+
+c) Deployment Instructions
+## Setup
+
+1. Clone the repo
+   ```bash
+   git clone https://github.com/YourUsername/MajiTrack.git
+   cd MajiTrack
+    ```
+
+Install dependencies
+
+Backend:
+```bash
+cd backend
+npm install
+```
+
+Frontend:
+```bash
+cd ../frontend
+npm install
+```
+
+Configure environment variables
+
+Copy .env.example to .env and add your MongoDB URI.
+
+Run locally
+
+Backend:
+```bash
+cd backend
+npm run dev
+```
+
+Frontend:
+```bash
+cd frontend
+npm run dev
+```
+
+Deployed Applications
+
+Frontend: https://majitrack.onrender.com
+ (update URL)
+
+Backend API: https://majitrack-backend.onrender.com/api/readings
+
+
+#### d) CI/CD (GitHub Actions)
+
+## CI/CD Pipeline
+- Workflow file: `.github/workflows/deploy.yml`
+- Runs on every push to `main`
+- Installs dependencies, builds the frontend, deploys backend/frontend
+- (Pipeline will be improved after submission)
+
+e) Monitoring & Notes
+## Monitoring & Maintenance
+- Future implementation: uptime monitoring and error tracking (e.g., Sentry)
+- Regular MongoDB backups recommended
