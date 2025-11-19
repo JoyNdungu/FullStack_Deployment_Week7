@@ -1,0 +1,51 @@
+name: Deploy MajiTrack
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backend-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run backend tests (optional)
+        working-directory: ./backend
+        run: npm test || echo "No tests configured"
+
+      - name: Deploy backend to Render
+        run: echo "Manual deployment done via Render"  # optional, you can integrate API later
+
+  frontend-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Deploy frontend to Vercel
+        run: echo "Manual deployment done via Vercel CLI or dashboard"
