@@ -1,64 +1,56 @@
-import settings from "./assets/settings.png";
-import lightmode from "./assets/lightmode.png";
+import React from "react";
+import { Home, PlusCircle, FileText, Lightbulb, Settings as SettingsIcon } from "lucide-react";
 
 const Sidebar = ({ currentPage, setCurrentPage, darkMode, setDarkMode }) => {
-  const menuItems = ["dashboard", "form", "reports", "tips"];
+  const menuItems = [
+    { label: "Dashboard", page: "dashboard", icon: <Home size={18} /> },
+    { label: "Add Reading", page: "form", icon: <PlusCircle size={18} /> },
+    { label: "Reports", page: "reports", icon: <FileText size={18} /> },
+    { label: "Tips", page: "tips", icon: <Lightbulb size={18} /> },
+    { label: "Settings", page: "settings", icon: <SettingsIcon size={18} /> },
+  ];
 
   return (
-    <section
-      className={`w-60 p-4 flex flex-col transition-colors duration-300 ${
-        darkMode ? "bg-gray-900" : "bg-sky-lightest"
+    <aside
+      className={`h-full w-64 p-6 flex flex-col transition-colors duration-300 ${
+        darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
       }`}
     >
-      {/* Title */}
-      <div
-        className={`text-center font-bold text-xl mb-4 transition-colors duration-300 ${
-          darkMode ? "text-cyan-400" : "text-sky-dark"
-        }`}
-      >
-        Dashboard
-      </div>
-      <hr
-        className={`border ${darkMode ? "border-gray-700" : "border-indigo-dark"} mb-4`}
-      />
+      <h1 className="text-2xl font-bold mb-6">MajiTrack</h1>
 
-      {/* Menu */}
-      <ul className="flex flex-col gap-4 text-lg cursor-pointer">
-        {menuItems.map((item) => (
-          <li
-            key={item}
-            onClick={() => setCurrentPage(item)}
-            className={`transition-colors duration-300 capitalize px-2 py-1 rounded-md ${
-              currentPage === item
-                ? darkMode
-                  ? "font-semibold text-white bg-blue-darker"
-                  : "font-semibold text-sky-dark bg-sky-lighter"
-                : darkMode
-                ? "text-blue-300 hover:text-white hover:bg-blue-darker/20"
-                : "text-sky-dark hover:bg-sky-lighter/50"
-            }`}
-          >
-            {item}
-          </li>
-        ))}
+      <ul className="flex flex-col gap-3">
+        {menuItems.map((item) => {
+          const isActive = currentPage === item.page;
+          const activeBg = darkMode ? "bg-blue-700 text-white" : "bg-blue-100 text-gray-900";
+          const hoverBg = darkMode ? "hover:bg-gray-800" : "hover:bg-gray-200";
+
+          return (
+            <li
+              key={item.page}
+              onClick={() => setCurrentPage(item.page)}
+              className={`cursor-pointer px-4 py-2 rounded-lg transition-colors duration-200 flex items-center gap-2 ${
+                isActive ? activeBg : hoverBg
+              }`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </li>
+          );
+        })}
       </ul>
 
-      {/* Footer Buttons */}
-      <div className="flex flex-row gap-4 mt-auto justify-center">
-        <img
-          src={settings}
-          alt="Settings"
-          className="h-9 cursor-pointer hover:opacity-80 transition-opacity"
-        />
-        <img
-          src={lightmode}
-          alt={darkMode ? "Light Mode" : "Dark Mode"}
-          className="h-9 cursor-pointer hover:scale-110 transition-transform"
-          onClick={() => setDarkMode(!darkMode)}
-          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-        />
+      <div className="mt-auto">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={darkMode}
+            onChange={() => setDarkMode(!darkMode)}
+            className="w-5 h-5"
+          />
+          <span className="font-medium">Dark Mode</span>
+        </label>
       </div>
-    </section>
+    </aside>
   );
 };
 

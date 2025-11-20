@@ -1,7 +1,6 @@
 import { Trash2, Download } from "lucide-react";
 
 const Reports = ({ readings, deleteReading, darkMode }) => {
-  // Export CSV
   const handleExport = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
@@ -49,9 +48,7 @@ const Reports = ({ readings, deleteReading, darkMode }) => {
         <tbody>
           {readings.map((reading) => (
             <tr key={reading._id} className={darkMode ? "bg-gray-800 text-white hover:bg-gray-700" : "bg-white text-gray-800 hover:bg-gray-100"}>
-              <td className="border px-4 py-2">
-                {new Date(reading.date).toLocaleDateString("en-US")}
-              </td>
+              <td className="border px-4 py-2">{new Date(reading.date).toLocaleDateString("en-US")}</td>
               <td className="border px-4 py-2">{reading.units}</td>
               <td className="border px-4 py-2">{reading.cost.toLocaleString()}</td>
               <td className="border px-4 py-2 text-center">

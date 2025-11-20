@@ -1,53 +1,43 @@
 import express from "express";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
-import waterReportRoutes from "./routes/waterReportRoutes.js";
+import mongoose from "mongoose";
+import authRoutes from "./routes/auth.js";
+// Ensure you have created this file, or comment it out if not ready yet
+import readingsRoutes from "./routes/readings.js"; 
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use(helmet());        // security headers
-app.use(morgan("dev"));   // request logging
 
-// Root route (friendly message)
-app.get("/", (req, res) => {
-  res.send("MajiTrack API is running...");
-});
+// Routes
+app.use("/api/auth", authRoutes); 
+app.use("/api/readings", readingsRoutes);
 
-// Health check (important for Render)
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "OK" });
-});
+// Basic root endpoint
+app.get("/", (req, res) => res.send("MajiTrack API running"));
 
-// API routes
-app.use("/api/readings", waterReportRoutes);
+// Connect to MongoDB and start server
+const start = async () => {
+  try {
+    if (!process.env.MONGO_URI) {
+        console.error("Error: MONGO_URI not found in .env file");
+        process.exit(1);
+    }
+    
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected");
+    
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("DB connection error:", err);
+    process.exit(1);
+  }
+};
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error("Server Error:", err.message);
-  res.status(err.statusCode || 500).json({
-    message: err.message || "Internal Server Error",
-  });
-});
-
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    serverSelectionTimeoutMS: 10000,  // avoid hanging during connection
-    maxPoolSize: 10,                  // connection pooling
-  })
-  .then(() => console.log("MongoDB connected successfully 🎉"))
-  .catch((err) => console.error("MongoDB connection error:", err));
-
-// Start server
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT} 🚀`)
-);
+start();

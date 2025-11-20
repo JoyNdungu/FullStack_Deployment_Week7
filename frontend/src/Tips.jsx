@@ -81,7 +81,7 @@ const Tips = ({ darkMode }) => {
       </div>
 
       {/* Tips Grid */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {tips.map((tip, idx) => {
           const Icon = tip.icon;
           return (
@@ -90,12 +90,13 @@ const Tips = ({ darkMode }) => {
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={`
-                ${tip.bgColor} rounded-xl shadow-lg p-6
+                tip-card ${tip.bgColor} rounded-xl shadow-lg p-6
                 transform transition-all duration-500 ease-out
                 ${hoveredIndex === idx ? "scale-105 shadow-2xl -rotate-1" : "scale-100 rotate-0"}
                 animate-slide-in
               `}
               style={{ animationDelay: `${idx * 150}ms` }}
+              aria-label={`Tip ${idx + 1}: ${tip.text}`}
             >
               <div className="flex items-start gap-4">
                 <div
@@ -148,7 +149,7 @@ const Tips = ({ darkMode }) => {
           ${darkMode
             ? "bg-gradient-to-r from-cyan-dark via-blue-dark to-indigo-dark text-gray-100"
             : "bg-gradient-to-r from-sky via-blue to-indigo text-white"}
-          relative overflow-hidden transition-opacity duration-500
+          relative overflow-hidden transition-opacity duration-700
           ${fade ? "opacity-100" : "opacity-0"}
         `}
       >
@@ -161,6 +162,7 @@ const Tips = ({ darkMode }) => {
         </div>
       </div>
 
+      {/* Animations */}
       <style>{`
         @keyframes fade-in { from { opacity: 0; transform: translateY(-20px);} to { opacity:1; transform: translateY(0);} }
         @keyframes bounce-in { 0% { opacity:0; transform: scale(0.3);} 50% { transform: scale(1.05);} 70% { transform: scale(0.9);} 100% { opacity:1; transform: scale(1);} }

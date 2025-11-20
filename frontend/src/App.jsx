@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/App.jsx
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Dashboard from "./Dashboard.jsx";
 import Sidebar from "./Sidebar.jsx";
@@ -6,76 +7,129 @@ import Navbar from "./Navbar.jsx";
 import Form from "./Form.jsx";
 import Reports from "./Reports.jsx";
 import Tips from "./Tips.jsx";
-
-// Improved App.jsx for MajiTrack
-// - Adds smooth page transitions (framer-motion)
-// - Adds subtle background overlay and transition-colors wrapper
-// - Keeps your existing state/logic intact
-// IMPORTANT: install framer-motion if you haven't: `npm install framer-motion`
+import Settings from "./Settings.jsx";
 
 const App = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [darkMode, setDarkMode] = useState(false);
-  const [readings, setReadings] = useState([
-    { date: "2025-11-01", units: 45, cost: 450 },
-    { date: "2025-11-02", units: 52, cost: 520 },
-    { date: "2025-11-03", units: 48, cost: 480 },
-    { date: "2025-11-04", units: 55, cost: 550 },
-    { date: "2025-11-05", units: 50, cost: 500 },
-    { date: "2025-11-06", units: 47, cost: 470 },
-    { date: "2025-11-07", units: 53, cost: 530 },
-  ]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [token, setToken] = useState(localStorage.getItem("token") || null);
 
-  const addReading = (newReading) => {
-    setReadings(
-      [...readings, newReading].sort(
-        (a, b) => new Date(a.date) - new Date(b.date)
-      )
-    );
-  };
+  const [readings, setReadings] = useState([]);
+  const [loadingReadings, setLoadingReadings] = useState(true);
 
-  const deleteReading = (index) => {
-    setReadings(readings.filter((_, i) => i !== index));
-  };
+  // Fetch readings from backend
+  useEffect(() => {
+    const fetchReadings = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch("http://localhost:5000/api/readings", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        setReadings(data.readings || []);
+      } catch (err) {
+        console.error("Failed to fetch readings:", err);
+      } finally {
+        setLoadingReadings(false);
+      }
+    };
+    fetchReadings();
+  }, [token]);
 
-  // small helper for page titles
-  const pageTitle = () => {
-    switch (currentPage) {
-      case "dashboard":
-        return "Dashboard";
-      case "form":
-        return "Add Reading";
-      case "reports":
-        return "Reports";
-      case "tips":
-        return "Tips";
-      default:
-        return "MajiTrack";
+  // Add a reading
+  const addReading = async (newReading) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/readings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newReading),
+      });
+      const savedReading = await res.json();
+      setReadings([...readings, savedReading].sort((a, b) => new Date(a.date) - new Date(b.date)));
+    } catch (err) {
+      console.error("Failed to add reading:", err);
     }
   };
 
+  // Delete a reading
+  const deleteReading = async (id) => {
+    try {
+      await fetch(`http://localhost:5000/api/readings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setReadings(readings.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error("Failed to delete reading:", err);
+    }
+  };
+
+  const pageTitle = () => {
+    switch (currentPage) {
+      case "dashboard": return "Dashboard";
+      case "form": return "Add Reading";
+      case "reports": return "Reports";
+      case "tips": return "Tips";
+      case "settings": return "Settings";
+      default: return "MajiTrack";
+    }
+  };
+
+  if (loadingReadings) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-600 dark:text-gray-200">
+        Loading readings...
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`flex flex-row min-h-screen relative transition-colors duration-300 ${
-        darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      {/* subtle radial background overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="w-full h-full bg-[radial-gradient(circle,_rgba(0,0,0,0.03),_transparent_60%)] dark:bg-[radial-gradient(circle,_rgba(255,255,255,0.02),_transparent_60%)]" />
+    <div className={`flex flex-row min-h-screen relative transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
+      
+      {/* Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} darkMode={darkMode} setDarkMode={setDarkMode} />
       </div>
 
-      <Sidebar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/40 z-20 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              className="fixed top-0 left-0 h-full w-64 z-30 md:hidden"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+            >
+              <Sidebar
+                currentPage={currentPage}
+                setCurrentPage={(page) => {
+                  setCurrentPage(page);
+                  setSidebarOpen(false);
+                }}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
+              />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
+      {/* Page Content */}
       <div className="flex flex-col flex-1 z-10">
-        <Navbar darkMode={darkMode} pageTitle={pageTitle()} />
-
-        {/* AnimatePresence allows exit animations when switching pages */}
+        <Navbar darkMode={darkMode} pageTitle={pageTitle()} openSidebar={() => setSidebarOpen(true)} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.main
             key={currentPage}
@@ -83,67 +137,23 @@ const App = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.28 }}
-            className={`flex-1 p-6 md:p-8 lg:p-10 ${
-              darkMode ? "bg-transparent" : "bg-transparent"
-            }`}
+            className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10"
           >
-            {/* Page container card to give consistent look */}
-            <div
-              className={`max-w-7xl mx-auto rounded-2xl p-6 md:p-8 shadow-sm transition-colors duration-300 ${
-                darkMode ? "bg-gray-800/70 backdrop-blur-sm" : "bg-white"
-              }`}
-            >
-              {currentPage === "dashboard" && (
-                <Dashboard
-                  readings={readings}
-                  setCurrentPage={setCurrentPage}
-                  darkMode={darkMode}
-                />
-              )}
-
-              {currentPage === "form" && (
-                <Form
-                  addReading={addReading}
-                  setCurrentPage={setCurrentPage}
-                  darkMode={darkMode}
-                />
-              )}
-
-              {currentPage === "reports" && (
-                <Reports
-                  readings={readings}
-                  deleteReading={deleteReading}
-                  darkMode={darkMode}
-                />
-              )}
-
+            <div className={`max-w-7xl mx-auto rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm transition-colors duration-300 ${darkMode ? "bg-gray-800/70 backdrop-blur-sm" : "bg-white"}`}>
+              {currentPage === "dashboard" && <Dashboard readings={readings} setCurrentPage={setCurrentPage} darkMode={darkMode} />}
+              {currentPage === "form" && <Form addReading={addReading} setCurrentPage={setCurrentPage} darkMode={darkMode} />}
+              {currentPage === "reports" && <Reports readings={readings} deleteReading={deleteReading} darkMode={darkMode} />}
               {currentPage === "tips" && <Tips darkMode={darkMode} />}
+              {currentPage === "settings" && <Settings darkMode={darkMode} setDarkMode={setDarkMode} />}
             </div>
 
-            {/* floating CTA - Add Reading */}
-            <div className="fixed bottom-8 right-8 md:bottom-10 md:right-10 z-20">
+            {/* Add Reading Button */}
+            <div className="hidden sm:block fixed bottom-8 right-8 md:bottom-10 md:right-10 z-20">
               <button
                 onClick={() => setCurrentPage("form")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-transform hover:-translate-y-1 active:scale-95 focus:outline-none ${
-                  darkMode
-                    ? "bg-blue-600 text-blue-500"
-                    : "bg-blue-600 text-blue-500 hover:bg-blue-700"
-                }`}
-                aria-label="Add reading"
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transform transition-transform hover:-translate-y-1 active:scale-95 focus:outline-none ${darkMode ? "bg-blue-600 text-blue-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="font-medium">Add Reading</span>
+                +<span className="font-medium">Add Reading</span>
               </button>
             </div>
           </motion.main>
